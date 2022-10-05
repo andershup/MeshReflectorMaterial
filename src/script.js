@@ -32,14 +32,23 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+////////////////////////////////////////////////////////////////////////////////////////
+//VARIABLE DECLARATIONS
+///////////////////////////////////////////////////////////////////////////////////////
 
 let models = null
 let  floorMesh = null 
 let leftWallMesh = null
 let rightWallMesh = null
+let backWallMesh = null
+let portalPlane = null
 
-// const axesHelper = new THREE.AxesHelper( 5 );
-// scene.add( axesHelper );
+
+/// Axis helper
+
+const axesHelper = new THREE.AxesHelper( 5 );
+scene.add( axesHelper );
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +82,7 @@ window.addEventListener('resize', () =>
 
 
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.1)
 scene.add(ambientLight)
 
 const pointLight = new THREE.PointLight(0xffffff, 0.1)
@@ -218,19 +227,18 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 const textureLoader = new THREE.TextureLoader(loadingManager)
 
+
+//////CURRENTLY WALL TEXTURES////////////////////////////////////////////////
 const floorColorTexture = textureLoader.load('/textures/floor-and-walls/BathroomTiles01_4K_BaseColor.png')
 const floorRoughnessTexture = textureLoader.load('/textures/floor-and-walls/BathroomTiles01_4K_Roughness.png')
 const floorNormalTexture = textureLoader.load('/textures/floor-and-walls/BathroomTiles01_4K_Normal.png')
-
-
-
-floorColorTexture.repeat.x = 4
-floorColorTexture.repeat.y = 2
+floorColorTexture.repeat.x = 1
+floorColorTexture.repeat.y = 5
 floorColorTexture.wrapS = THREE.RepeatWrapping
 floorColorTexture.wrapT = THREE.RepeatWrapping
 // floorColorTexture.rotation = 1
-// floorColorTexture.needsUpdate = true
-
+floorColorTexture.needsUpdate = true
+/////////////////////////////////////////////////////////////////////////
 
 const graniteDifuse = textureLoader.load('./textures/reflecting-material/Granite08large_MR_1K/Granite08large_1K_BaseColor.png')
 const graniteRoughness = textureLoader.load('./textures/reflecting-material/Granite08large_MR_1K/Granite08large_1K_Roughness.png')
@@ -293,63 +301,24 @@ const portalLightMaterial = new THREE.ShaderMaterial({
 
 //// LEFT PORTAL
 const portal = new THREE.Mesh(
-    new THREE.PlaneGeometry(5,5),
+    new THREE.PlaneGeometry(15,4),
     new THREE.MeshStandardMaterial({
         // color: 'white',
         // emissive: 'white',
         // envMap: environmentMap
+    //   plane.doublesided = true
 
     })
 )
 
+
 portal.material = portalLightMaterial
-portal.position.set(-8,2,0)
+portal.position.set(-2,2,2)
 scene.add(portal)
 
 
 
-/////////////////////////////////////////////////
-///// NATIVE MATERIAL RAISED FLOOR TESTER
-//////////////////////////////////////////////
-const nativeFloorGeometry = new THREE.PlaneGeometry(4,16,1)
-const nativeFloorMaterial = new THREE.MeshStandardMaterial()
-const nativeFloor = new THREE.Mesh(nativeFloorGeometry,nativeFloorMaterial)
-scene.add(nativeFloor)
-nativeFloor.rotation.x = - Math.PI /2
-nativeFloor.position.set(-5,2,-6)
 
-// Adding reflective material 
-nativeFloor.material = new MeshReflectorMaterial(renderer, camera, scene, nativeFloor,
-    {
-        resolution: 512,
-        blur: [1024,1024],
-        mixStrength: 1,
-        planeNormal: new THREE.Vector3(0, 0, 1),
-        mixContrast: 1,
-        bufferSamples: 16,
-        depthToBlurRatioBias: 0.6,
-        mixBlur: 5,
-        mixContrast: 1,
-        minDepthThreshold: 0.5,
-        maxDepthThreshold: 2.9,
-        depthScale: 1.7,
-        mirror: 1,
-        // distortionMap: whiteTilesNormal
-    });
-    nativeFloor.material.setValues({
-        // roughnessMap:floorRoughnessTexture,
-        map: whiteTilesDifuse,
-        normalScale: new THREE.Vector2(0.25, 0.25),
-        normalMap: whiteTilesNormal,
-        emissiveMap: whiteTilesDifuse,
-        emissive: new THREE.Color(0xffffff),
-        emissiveIntensity: 0.6,
-        envMapIntensity: 0.2,
-        roughness:0.2,
-        color: 0xffffff,
-        metalness: 0.1,
-        side: THREE.DoubleSide
-    })
     // floorMesh.geometry.verticesNeedUpdate = true;
 // floorMesh.geometry.normalsNeedUpdate = true;
 // floorMesh.geometry.computeBoundingSphere();
@@ -358,7 +327,7 @@ nativeFloor.material = new MeshReflectorMaterial(renderer, camera, scene, native
     // floorOriginalMaterial.dispose();
     // renderer.renderLists.dispose();
 
-    console.log('this is the native test floor after adding relective', nativeFloor)
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // GUI
@@ -400,18 +369,22 @@ gltfLoader.load(
     (gltf) =>
     {
      
-       
+     console.log(gltf.scene)  
     gltf.scene.traverse((model) => {
         if(model.isMesh) {
             if(model.name == 'floor') 
             {
                 floorMesh = model
+                console.log('this is the floorMesh when just added', floorMesh)
+                floorMesh.geometry.computeVertexNormals()
+                floorMesh.geometry.normalizeNormals()
+
                 floorMesh.material = new MeshReflectorMaterial(renderer, camera, scene, floorMesh,
                     {
                         resolution: 512,
                         blur: [1024,1024],
                         mixStrength: 1,
-                        planeNormal: new THREE.Vector3(0, 0, 1),
+                        planeNormal: new THREE.Vector3(0, 1, 0),
                         mixContrast: 1,
                         bufferSamples: 16,
                         depthToBlurRatioBias: 0.6,
@@ -435,7 +408,7 @@ gltfLoader.load(
                         roughness:0.2,
                         color: 0xffffff,
                         metalness: 0.1,
-                        side: THREE.FrontSide
+                      
                     })
             }
             if(model.name == 'wall-left') 
@@ -446,7 +419,7 @@ gltfLoader.load(
                         resolution: 512,
                         blur: [1024,1024],
                         mixStrength: 4,
-                        planeNormal: new THREE.Vector3(0, 0, 1),
+                        planeNormal: new THREE.Vector3(1, 0, 0),
                         mixContrast: 1,
                         bufferSamples: 16,
                         depthToBlurRatioBias: 0.6,
@@ -482,7 +455,7 @@ gltfLoader.load(
                         resolution: 512,
                         blur: [1024,1024],
                         mixStrength: 4,
-                        planeNormal: new THREE.Vector3(0, 0, 1),
+                        planeNormal: new THREE.Vector3(-1, 0, 0),
                         mixContrast: 1,
                         bufferSamples: 16,
                         depthToBlurRatioBias: 0.6,
@@ -505,12 +478,54 @@ gltfLoader.load(
                         envMapIntensity: 0.2,
                         roughness:0.6,
                         color: 0xffffff,
+                        metalness: 0.1,
+                       
+                    })
+                    // floorOriginalMaterial.dispose();
+                    renderer.renderLists.dispose();
+            }
+            if(model.name == 'portal-plane'){
+                portalPlane = model
+                portalPlane.material = portalLightMaterial
+                portalPlane.rotation.y = Math.PI/2
+            } 
+            
+            if(model.name == 'back-wall') 
+            {
+                backWallMesh = model
+                backWallMesh.material = new MeshReflectorMaterial(renderer, camera, scene, backWallMesh,
+                    {
+                        resolution: 512,
+                        blur: [1024,1024],
+                        mixStrength: 4,
+                        planeNormal: new THREE.Vector3(0, 0, 1),
+                        mixContrast: 1,
+                        bufferSamples: 16,
+                        depthToBlurRatioBias: 0.6,
+                        mixBlur: 5,
+                        mixContrast: 1,
+                        minDepthThreshold: 0.5,
+                        maxDepthThreshold: 2.9,
+                        depthScale: 2.7,
+                        mirror: 1,
+                        // distortionMap: whiteTilesNormal
+                    });
+                    backWallMesh.material.setValues({
+                        roughnessMap:floorRoughnessTexture,
+                        map: floorColorTexture,
+                        normalScale: new THREE.Vector2(0.25, 0.25),
+                        normalMap: floorNormalTexture,
+                        emissiveMap: floorColorTexture,
+                        emissive: new THREE.Color(0xffffff),
+                        emissiveIntensity: 0.6,
+                        envMapIntensity: 0.2,
+                        roughness:0.6,
+                        color: 0xffffff,
                         metalness: 0.1
                     })
                     // floorOriginalMaterial.dispose();
-                    // renderer.renderLists.dispose();
+                    renderer.renderLists.dispose();
             }
-            if(model.name == 'portal-plane') model.material = portalLightMaterial
         }
     })
 
@@ -570,6 +585,28 @@ gltfLoader.load(
     
             addReflectorFloor()
 
+            function addReflectorBackWall(){
+                if (debug){
+                    const reflectorFolder2 = gui.addFolder('back-wall')
+                    reflectorFolder2.add(backWallMesh.material, 'roughness').min(0).max(2).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material, 'envMapIntensity').min(0).max(2).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material, 'emissiveIntensity').min(0).max(2).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material, 'metalness').min(0).max(2).step(0.001)
+                    // reflectorFolder2.abackWallor(floor.material, 'color')
+                    reflectorFolder2.add(backWallMesh.material.reflectorProps, 'mixBlur').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material.reflectorProps, 'mixStrength').min(0).max(200).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material.reflectorProps, 'depthScale').min(0).max(20).step(0.1)
+                    reflectorFolder2.add(backWallMesh.material.reflectorProps, 'mixContrast').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material.reflectorProps, 'minDepthThreshold').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material.reflectorProps, 'depthToBlurRatioBias').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(backWallMesh.material.reflectorProps, 'maxDepthThreshold').min(-5).max(7).step(0.001).onChange(function(){
+                        backWallMesh.material.needsUpdate = true;
+                    })
+                }
+            }
+    
+            addReflectorBackWall()
+
      /**
      * Add reflector material left wall 
      */
@@ -583,7 +620,8 @@ gltfLoader.load(
 
        
             scene.add(gltf.scene)     //     floorMesh.material.envMap = environmentMap
-        
+        console.log(gltf.scene)
+
 })
 
 /**
@@ -602,8 +640,11 @@ const tick = () =>
     if(floorMesh) {
 //  console.log('floorMesh is updating')
  floorMesh.material.update()
-}
-nativeFloor.material.update()
+ leftWallMesh.material.update()
+ rightWallMesh.material.update()
+ backWallMesh.material.update()
+ 
+    }
 
 
 
