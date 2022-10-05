@@ -32,6 +32,8 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //VARIABLE DECLARATIONS
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -248,11 +250,11 @@ const whiteTilesRoughness = textureLoader.load('./textures/reflecting-material/S
 const whiteTilesNormal = textureLoader.load('./textures/reflecting-material/StoneTilesFloor03_MR_1K/StoneTilesFloor03_1K_Normal.png')
 // floorNormalTexture.matrixAutoUpdate = true
 
-whiteTilesDifuse.repeat.x = 2
-whiteTilesDifuse.repeat.y = 2
+whiteTilesDifuse.repeat.x = 100
+whiteTilesDifuse.repeat.y = 18
 whiteTilesDifuse.wrapS = THREE.RepeatWrapping
 whiteTilesDifuse.wrapT = THREE.RepeatWrapping
-
+whiteTilesDifuse.needsUpdate = true 
 
 // const cubeTextureLoader = new THREE.CubeTextureLoader()
 // const environmentMap = cubeTextureLoader.load([
@@ -313,9 +315,11 @@ const portal = new THREE.Mesh(
 
 
 portal.material = portalLightMaterial
-portal.position.set(-2,2,2)
+portal.position.set(0,2,2)
 scene.add(portal)
 
+                    // const helper = new VertexNormalsHelper( portal, 1, 0xff0000 );
+                    // scene.add(helper)
 
 
 
@@ -365,20 +369,20 @@ dracoLoader.setDecoderPath('/draco/')
 gltfLoader.setDRACOLoader(dracoLoader)
 
 gltfLoader.load(
-    './models/cinema-trial-setup-with-no-materials.glb',
+    './models/fresh-setup-onlyEmmission-origin-bottom.glb',
     (gltf) =>
     {
-     
-     console.log(gltf.scene)  
+    //  console.log('trying here and learing a shitload', gltf.scene)
+//    let center = gltf.scene.geometry.computeBoundingSphere()
+//    console.log(center)
     gltf.scene.traverse((model) => {
         if(model.isMesh) {
             if(model.name == 'floor') 
             {
                 floorMesh = model
-                console.log('this is the floorMesh when just added', floorMesh)
-                floorMesh.geometry.computeVertexNormals()
-                floorMesh.geometry.normalizeNormals()
-
+                // floorMesh.geometry.computeVertexNormals()
+                // floorMesh.geometry.normalizeNormals()
+                // console.log('this is the floor', floorMesh)
                 floorMesh.material = new MeshReflectorMaterial(renderer, camera, scene, floorMesh,
                     {
                         resolution: 512,
@@ -411,9 +415,13 @@ gltfLoader.load(
                       
                     })
             }
-            if(model.name == 'wall-left') 
+            if(model.name == 'left-wall') 
             {
                 leftWallMesh = model
+                console.log('this is the left wall ', leftWallMesh)
+                leftWallMesh.geometry.computeVertexNormals()
+                // leftWallMesh.geometry.normalizeNormals()
+            
                 leftWallMesh.material = new MeshReflectorMaterial(renderer, camera, scene, leftWallMesh,
                     {
                         resolution: 512,
@@ -446,10 +454,15 @@ gltfLoader.load(
                     })
                     // floorOriginalMaterial.dispose();
                     renderer.renderLists.dispose();
+
             }
-            if(model.name == 'wall-right') 
+            if(model.name == 'right-wall_') 
             {
                 rightWallMesh = model
+                console.log('this is the right wall ', rightWallMesh)
+                // rightWallMesh.geometry.computeVertexNormals()
+                // rightWallMesh.geometry.normalizeNormals()
+              
                 rightWallMesh.material = new MeshReflectorMaterial(renderer, camera, scene, rightWallMesh,
                     {
                         resolution: 512,
@@ -482,12 +495,13 @@ gltfLoader.load(
                        
                     })
                     // floorOriginalMaterial.dispose();
-                    renderer.renderLists.dispose();
+                    // renderer.renderLists.dispose();
             }
-            if(model.name == 'portal-plane'){
+            if(model.name == 'portal'){
                 portalPlane = model
                 portalPlane.material = portalLightMaterial
                 portalPlane.rotation.y = Math.PI/2
+                portalPlane.position.z = -2
             } 
             
             if(model.name == 'back-wall') 
@@ -565,20 +579,20 @@ gltfLoader.load(
 /////// GUI
             function addReflectorFloor(){
                 if (debug){
-                    const reflectorFolder2 = gui.addFolder('floor')
-                    reflectorFolder2.add(floorMesh.material, 'roughness').min(0).max(2).step(0.001)
-                    reflectorFolder2.add(floorMesh.material, 'envMapIntensity').min(0).max(2).step(0.001)
-                    reflectorFolder2.add(floorMesh.material, 'emissiveIntensity').min(0).max(2).step(0.001)
-                    reflectorFolder2.add(floorMesh.material, 'metalness').min(0).max(2).step(0.001)
-                    // reflectorFolder2.addColor(floor.material, 'color')
-                    reflectorFolder2.add(floorMesh.material.reflectorProps, 'mixBlur').min(0).max(7).step(0.001)
-                    reflectorFolder2.add(floorMesh.material.reflectorProps, 'mixStrength').min(0).max(200).step(0.001)
-                    reflectorFolder2.add(floorMesh.material.reflectorProps, 'depthScale').min(0).max(20).step(0.1)
-                    reflectorFolder2.add(floorMesh.material.reflectorProps, 'mixContrast').min(0).max(7).step(0.001)
-                    reflectorFolder2.add(floorMesh.material.reflectorProps, 'minDepthThreshold').min(0).max(7).step(0.001)
-                    reflectorFolder2.add(floorMesh.material.reflectorProps, 'depthToBlurRatioBias').min(0).max(7).step(0.001)
-                    reflectorFolder2.add(floorMesh.material.reflectorProps, 'maxDepthThreshold').min(-5).max(7).step(0.001).onChange(function(){
-                        floorMesh.material.needsUpdate = true;
+                    const reflectorFolder2 = gui.addFolder('right wall')
+                    reflectorFolder2.add(rightWallMesh.material, 'roughness').min(0).max(2).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material, 'envMapIntensity').min(0).max(2).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material, 'emissiveIntensity').min(0).max(2).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material, 'metalness').min(0).max(2).step(0.001)
+                    // reflectorFolder2.arightWallMeshloor.material, 'color')
+                    reflectorFolder2.add(rightWallMesh.material.reflectorProps, 'mixBlur').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material.reflectorProps, 'mixStrength').min(0).max(200).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material.reflectorProps, 'depthScale').min(0).max(20).step(0.1)
+                    reflectorFolder2.add(rightWallMesh.material.reflectorProps, 'mixContrast').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material.reflectorProps, 'minDepthThreshold').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material.reflectorProps, 'depthToBlurRatioBias').min(0).max(7).step(0.001)
+                    reflectorFolder2.add(rightWallMesh.material.reflectorProps, 'maxDepthThreshold').min(-5).max(7).step(0.001).onChange(function(){
+                        rightWallMesh.material.needsUpdate = true;
                     })
                 }
             }
@@ -620,7 +634,7 @@ gltfLoader.load(
 
        
             scene.add(gltf.scene)     //     floorMesh.material.envMap = environmentMap
-        console.log(gltf.scene)
+//    console.log(gltf.scene)
 
 })
 
