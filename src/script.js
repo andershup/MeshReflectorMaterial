@@ -10,7 +10,7 @@ import { gsap } from 'gsap'
 import { PixiPlugin } from "gsap/PixiPlugin.js";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin.js";
 import  MeshReflectorMaterial  from '../static/shaders/MeshReflectorMaterial';
-import { BackSide, DoubleSide, LoadingManager } from 'three'
+import { BackSide, DataTexture, DoubleSide, LoadingManager } from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
@@ -68,9 +68,9 @@ const objsToTest = [];
 // Debug
 
 const debugObject = {}
-const gui = new dat.GUI({
-    width: 400
-})
+// const gui = new dat.GUI({
+//     width: 400
+// })
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -140,20 +140,41 @@ scene.add(ambientLight)
 ////////////////////////////////////////////////////////////////////////////////
 // Base camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 50)
-// camera.position.set(1.5, 0, -4)
-// camera.lookAt(2,6,-15)
-camera.position.set(0,4,2)
+camera.position.set(0.5, 0.3, -4)
+camera.lookAt(2,6,-15)
+// camera.position.set(0,4,2)
 
 // camera.layers.enable(1)
 scene.add(camera)
+// const cameralookatneon = () => 
+// {
+//     t = Math.min(t + 0.01, 1);
+// camera.position.copy(startPosition).lerp(endPosition, t);
+// camera.lookAt(0, 0, 0);
+// }
+const cameraIntro = () => 
+{
+    gsap.timeline()
 
-console.log(camera.path)
+  .to(camera.position, { x: -2, y:0.3, z: 8,duration: 5,  ease: "power4.inOut(2,6)" })
+  .to(camera.position, { x: 5, y: 4, z: 2, duration: 5, ease: "power4.inOut(2,4)" })
+  .to(camera.rotation, { duration: 3, ease: 'power2.inOut', y: '-=0.6', x: '-=0.3'})
+//   .to(camera, {rotation: "90_cw", duration: 3})
+
+}
+const cameratohomefromskills = () =>
+{
+    gsap.timeline()
+    .to(camera.position,{ x: -2, y:0.3, z: 8,duration: 5,  ease: "power4.inOut(2,6)"} )
+    .to(camera.position, {x: 1.5, y: 0.3, z: -4, duration: 5, ease: "power4.inOut(2,6)"} )
+    .to(camera.rotation, { duration: 3, ease: 'power2.inOut', y: '+=1'})
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Controls
 ///////////////////////////////////////////////////////////////////////////////
 
- controls = new OrbitControls(camera, canvas)
-controls.target.set(0, 0.75, 0)
+//  controls = new OrbitControls(camera, canvas)
+// controls.target.set(0, 0.75, 0)
 
 /////////////////////////////////////////////////////////////////////////////////
 //RENDERER
@@ -290,8 +311,10 @@ function makePanel() {
 		borderRadius: 0.11
 	} );
 
-	container.position.set( 0, 0.6, -1.2 );
+	container.position.set( 0, 0.6, -10 );
 	container.rotation.x = -0.55;
+    container.scale.x = 2
+    container.scale.y = 2
 	scene.add( container );
 
 	// BUTTONS
@@ -315,7 +338,7 @@ function makePanel() {
 		state: 'hovered',
 		attributes: {
 			offset: 0.035,
-			backgroundColor: new THREE.Color( 0x999999 ),
+			backgroundColor: new THREE.Color('blue' ),
 			backgroundOpacity: 1,
 			fontColor: new THREE.Color( 0xffffff )
 		},
@@ -339,19 +362,19 @@ function makePanel() {
 	// Add text to buttons
 
 	buttonNext.add(
-		new ThreeMeshUI.Text( { content: 'next' } )
-	);
-
-	buttonPrevious.add(
-		new ThreeMeshUI.Text( { content: 'previous' } )
-	);
+        new ThreeMeshUI.Text( { content: 'skills' } )
+        );
+        
+        buttonPrevious.add(
+            new ThreeMeshUI.Text( { content: 'contact' } )
+        );
 
 	// Create states for the buttons.
 	// In the loop, we will call component.setState( 'state-name' ) when mouse hover or click
 
 	const selectedAttributes = {
 		offset: 0.02,
-		backgroundColor: new THREE.Color( 0x777777 ),
+		backgroundColor: new THREE.Color( 'red'),
 		fontColor: new THREE.Color( 0x222222 )
 	};
 
@@ -359,9 +382,9 @@ function makePanel() {
 		state: 'selected',
 		attributes: selectedAttributes,
 		onSet: () => {
-
-			currentMesh = ( currentMesh + 1 ) % 3;
-			showMesh( currentMesh );
+            cameraIntro()
+			// currentMesh = ( currentMesh + 1 ) % 3;
+			// showMesh( currentMesh );
 
 		}
 	} );
@@ -400,7 +423,7 @@ function loop() {
 	// to improve performance
 	ThreeMeshUI.update();
 
-	controls.update();
+	// controls.update();
 
 	meshContainer.rotation.z += 0.01;
 	meshContainer.rotation.y += 0.01;
@@ -492,6 +515,292 @@ function raycast() {
 
 	}, null );
 }
+
+	////////////////////
+	// Primitive Meshes
+	////////////////////
+
+	meshContainer = new THREE.Group();
+	meshContainer.position.set( 0, 1, -1.9 );
+	scene.add( meshContainer );
+
+	//
+
+	// const sphere = new THREE.Mesh(
+	// 	new THREE.IcosahedronBufferGeometry( 0.3, 1 ),
+	// 	new THREE.MeshStandardMaterial( { color: 0x3de364, flatShading: true } )
+	// );
+
+	// const box = new THREE.Mesh(
+	// 	new THREE.BoxBufferGeometry( 0.45, 0.45, 0.45 ),
+	// 	new THREE.MeshStandardMaterial( { color: 0x643de3, flatShading: true } )
+	// );
+
+	// const cone = new THREE.Mesh(
+	// 	new THREE.ConeBufferGeometry( 0.28, 0.5, 10 ),
+	// 	new THREE.MeshStandardMaterial( { color: 0xe33d4e, flatShading: true } )
+	// );
+
+	//
+
+	// sphere.visible = box.visible = cone.visible = false;
+
+	// meshContainer.add( sphere, box, cone );
+
+	// meshes = [ sphere, box, cone ];
+	// currentMesh = 0;
+
+	// showMesh( currentMesh );
+
+	//////////
+	// Panel
+	//////////
+
+	makePanel2();
+
+	//
+
+	renderer.setAnimationLoop( loop2 );
+
+
+
+// Shows the primitive mesh with the passed ID and hide the others
+
+// function showMesh( id ) {
+
+// 	meshes.forEach( ( mesh, i ) => {
+
+// 		mesh.visible = i === id ? true : false;
+
+// 	} );
+
+// }
+
+///////////////////
+// UI contruction
+///////////////////
+
+function makePanel2() {
+
+	// Container block, in which we put the two buttons.
+	// We don't define width and height, it will be set automatically from the children's dimensions
+	// Note that we set contentDirection: "row-reverse", in order to orient the buttons horizontally
+
+	const container = new ThreeMeshUI.Block( {
+		justifyContent: 'center',
+		contentDirection: 'row-reverse',
+		fontFamily: '/fonts/Roboto-msdf.json',
+		fontTexture: '/fonts/Roboto-msdf.png',
+		fontSize: 0.07,
+		padding: 0.02,
+		borderRadius: 0.11
+	} );
+
+	container.position.set( 10.3, 0.6, -6 );
+	// container.rotation.x = -0.55;
+	container.rotation.y = -Math.PI / 2;
+    container.scale.x = 2
+    container.scale.y = 2
+	scene.add( container );
+
+	// BUTTONS
+
+	// We start by creating objects containing options that we will use with the two buttons,
+	// in order to write less code.
+
+	const buttonOptions = {
+		width: 0.4,
+		height: 0.15,
+		justifyContent: 'center',
+		offset: 0.05,
+		margin: 0.02,
+		borderRadius: 0.075
+	};
+
+	// Options for component.setupState().
+	// It must contain a 'state' parameter, which you will refer to with component.setState( 'name-of-the-state' ).
+
+	const hoveredStateAttributes = {
+		state: 'hovered',
+		attributes: {
+			offset: 0.035,
+			backgroundColor: new THREE.Color('blue' ),
+			backgroundOpacity: 1,
+			fontColor: new THREE.Color( 0xffffff )
+		},
+	};
+
+	const idleStateAttributes = {
+		state: 'idle',
+		attributes: {
+			offset: 0.035,
+			backgroundColor: new THREE.Color( 0x666666 ),
+			backgroundOpacity: 0.3,
+			fontColor: new THREE.Color( 0xffffff )
+		},
+	};
+
+	// Buttons creation, with the options objects passed in parameters.
+
+	const buttonNext = new ThreeMeshUI.Block( buttonOptions );
+	const buttonPrevious = new ThreeMeshUI.Block( buttonOptions );
+
+	// Add text to buttons
+
+	buttonNext.add(
+        new ThreeMeshUI.Text( { content: 'Home' } )
+        );
+        
+        buttonPrevious.add(
+            new ThreeMeshUI.Text( { content: 'contact' } )
+        );
+
+	// Create states for the buttons.
+	// In the loop, we will call component.setState( 'state-name' ) when mouse hover or click
+
+	const selectedAttributes = {
+		offset: 0.02,
+		backgroundColor: new THREE.Color( 'red'),
+		fontColor: new THREE.Color( 0x222222 )
+	};
+
+	buttonNext.setupState( {
+		state: 'selected',
+		attributes: selectedAttributes,
+		onSet: () => {
+            cameratohomefromskills()
+			// currentMesh = ( currentMesh + 1 ) % 3;
+			// showMesh( currentMesh );
+
+		}
+	} );
+	buttonNext.setupState( hoveredStateAttributes );
+	buttonNext.setupState( idleStateAttributes );
+
+	//
+
+	buttonPrevious.setupState( {
+		state: 'selected',
+		attributes: selectedAttributes,
+		onSet: () => {
+
+			currentMesh -= 1;
+			if ( currentMesh < 0 ) currentMesh = 2;
+			showMesh( currentMesh );
+
+		}
+	} );
+	buttonPrevious.setupState( hoveredStateAttributes );
+	buttonPrevious.setupState( idleStateAttributes );
+
+	//
+
+	container.add( buttonNext, buttonPrevious );
+	objsToTest.push( buttonNext, buttonPrevious );
+
+}
+
+
+
+function loop2() {
+
+	// Don't forget, ThreeMeshUI must be updated manually.
+	// This has been introduced in version 3.0.0 in order
+	// to improve performance
+	ThreeMeshUI.update();
+
+	// controls.update();
+
+	// meshContainer.rotation.z += 0.01;
+	// meshContainer.rotation.y += 0.01;
+
+	renderer.render( scene, camera );
+
+	updateButtons2();
+
+}
+
+// Called in the loop, get intersection with either the mouse or the VR controllers,
+// then update the buttons states according to result
+
+function updateButtons2() {
+
+	// Find closest intersecting object
+
+	let intersect;
+
+	if ( renderer.xr.isPresenting ) {
+
+		vrControl.setFromController( 0, raycaster.ray );
+
+		intersect = raycast();
+
+		// Position the little white dot at the end of the controller pointing ray
+		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
+
+	} else if ( mouse.x !== null && mouse.y !== null ) {
+
+		raycaster.setFromCamera( mouse, camera );
+
+		intersect = raycast();
+
+	}
+
+	// Update targeted button state (if any)
+
+	if ( intersect && intersect.object.isUI ) {
+
+		if ( selectState ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'selected' );
+
+		} else {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'hovered' );
+
+		}
+
+	}
+
+	// Update non-targeted buttons state
+
+	objsToTest.forEach( ( obj ) => {
+
+		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			obj.setState( 'idle' );
+
+		}
+
+	} );
+
+}
+
+//
+
+function raycast2() {
+
+	return objsToTest.reduce( ( closestIntersection, obj ) => {
+
+		const intersection = raycaster.intersectObject( obj, true );
+
+		if ( !intersection[ 0 ] ) return closestIntersection;
+
+		if ( !closestIntersection || intersection[ 0 ].distance < closestIntersection.distance ) {
+
+			intersection[ 0 ].object = obj;
+
+			return intersection[ 0 ];
+
+		}
+
+		return closestIntersection;
+
+	}, null );
+}
 // const container = new ThreeMeshUI.Block({ 
 //     width: 1.2,
 //     height: 0.7,
@@ -545,10 +854,7 @@ function raycast() {
 
 
 
-// const cameraIntro = gsap.timeline()
-// cameraIntro
-//   .to(camera.position, { x: 1.5, y:0.2, z: -4 })
-//   .to(camera.position, { x: 0, y: 1, duration: 5, ease: "power4.inOut(2,4)" })
+
 
 //   cameraIntro.to(controls.target.set(1.5, 5,-15), { x: 2, y: 7, z: -15, duration: 5, ease: 'sine.inOut' }, "+=1")
 // onComplete
@@ -599,10 +905,10 @@ unrealBloomPass.strength = 1.8
 unrealBloomPass.radius = 1
 unrealBloomPass.threshold = 0.2
 
-gui.add(unrealBloomPass, 'enabled')
-gui.add(unrealBloomPass, 'strength').min(0).max(2).step(0.001)
-gui.add(unrealBloomPass, 'radius').min(0).max(2).step(0.001)
-gui.add(unrealBloomPass, 'threshold').min(0).max(1).step(0.001)
+// gui.add(unrealBloomPass, 'enabled')
+// gui.add(unrealBloomPass, 'strength').min(0).max(2).step(0.001)
+// gui.add(unrealBloomPass, 'radius').min(0).max(2).step(0.001)
+// gui.add(unrealBloomPass, 'threshold').min(0).max(1).step(0.001)
 
 // Gamma correction pass
 const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader)
@@ -885,19 +1191,19 @@ testDiffuse.wrapT = THREE.RepeatWrapping
 debugObject.portalColorStart = '#00FF04'
 debugObject.portalColorEnd = '#5a5a5a'
 
-gui
-    .addColor(debugObject, 'portalColorStart')
-    .onChange(() =>
-    {
-        portalLightMaterial.uniforms.uColorStart.value.set(debugObject.portalColorStart)
-    })
+// gui
+//     .addColor(debugObject, 'portalColorStart')
+//     .onChange(() =>
+//     {
+//         portalLightMaterial.uniforms.uColorStart.value.set(debugObject.portalColorStart)
+//     })
 
-gui
-    .addColor(debugObject, 'portalColorEnd')
-    .onChange(() =>
-    {
-        portalLightMaterial.uniforms.uColorEnd.value.set(debugObject.portalColorEnd)
-    })
+// gui
+//     .addColor(debugObject, 'portalColorEnd')
+//     .onChange(() =>
+//     {
+//         portalLightMaterial.uniforms.uColorEnd.value.set(debugObject.portalColorEnd)
+//     })
 
 const portalLightMaterial = new THREE.ShaderMaterial({
     uniforms:
@@ -1333,13 +1639,7 @@ const tick = () =>
 
 
 } 
-if(scss && blender && javascript) 
-{
-    
-    // scss.layers.enable(1) 
-    // rightWallMesh.layers.enable(1)
-    // fakeEmissionMesh.layers.set(1)
-}
+
 
 
 camera.layers.set(1)
@@ -1350,7 +1650,7 @@ renderer.render(scene, camera)
 //  effectComposer.render()
     // Update controls
     ThreeMeshUI.update();
- controls.update()
+//  controls.update()
  meshContainer.rotation.z += 0.01;
  meshContainer.rotation.y += 0.01;
     // Render
